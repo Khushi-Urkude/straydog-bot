@@ -89,7 +89,14 @@ const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&
 
 // Twilio WhatsApp webhook
 app.post('/whatsapp', (req, res) => {
-  const reply = bot(req.body.From, req.body.Body);
+  let reply;
+  try {
+    const b = req.body || {};
+    const t = b.Body || (b.Latitude
+      ? `${b.Address || 'Pinned location'} (https://maps.google.com/?q=${b.Latitude},${b.Longitude})`
+      : '');
+    reply = bot(b.From, t);
+  } catch (e) { console.error(e); reply = MENU; }
   res.type('text/xml').send(`<Response><Message>${esc(reply)}</Message></Response>`);
 });
 
